@@ -1,47 +1,44 @@
 import os
-import time
 import pymysql
 from flask import Flask
 
 app = Flask(__name__)
 
+
 def get_conn():
+    # Gjør variablene eksplisitte (Pylance liker dette)
+    host: str = os.getenv("DB_HOST", "db")
+    port: int = int(os.getenv("DB_PORT", "3306"))
+    user: str = os.getenv("DB_USER", "wombo")
+    password: str = os.getenv("DB_PASSWORD", "wombopass")
+    database: str = os.getenv("DB_NAME", "wombo")
+
     return pymysql.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        port=int(os.getenv("DB_PORT", "3306")),
-        user=os.getenv("DB_USER", "KristianTalgo"),
-        password=os.getenv("DB_PASSWORD", "159355"),
-        database=os.getenv("DB_NAME", "wombo"),
+        host=host,
+        port=port,
+        user=user,
+        password=password,
+        database=database,
         autocommit=True,
     )
 
-def init_db():
-    # Sikkerhet: prøv noen ganger hvis DB akkurat startet
-    for _ in range(20):
-        try:
-            conn = get_conn()
-            with conn.cursor() as cur:
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS visits (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    );
-                """)
-            conn.close()
-            return
-        except Exception:
-            time.sleep(1)
 
 @app.route("/")
 def home():
-    init_db()
     conn = get_conn()
-    with conn.cursor() as cur:
-        cur.execute("INSERT INTO visits VALUES (NULL, DEFAULT);")
-        cur.execute("SELECT COUNT(*) FROM visits;")
-        (count,) = cur.fetchone()
-    conn.close()
-    return f"Hei! Flask + MariaDB funker 🚀 Antall besøk: {count}"
+    try:
+        with conn.cursor() as cur:
+            # Reneste måte å bruke defaults på i MariaDB/MySQL
+            cur.execute("INSERT INTO visits () VALUES ();")
+
+            cur.execute("SELECT COUNT(*) FROM visits;")
+            row = cur.fetchone()
+            count = int(row[0]) if row else 0
+
+        return f"Hei! Flask + MariaDB funker 🚀 Antall besøk: {count}"
+    finally:
+        conn.close()
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
