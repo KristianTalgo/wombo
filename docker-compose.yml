@@ -1,0 +1,34 @@
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: wombo
+      MARIADB_USER: KristianTalgo
+      MARIADB_PASSWORD: 159355
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=wombo
+      - DB_USER=KristianTalgo
+      - DB_PASSWORD=159355
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
