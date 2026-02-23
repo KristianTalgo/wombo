@@ -12,7 +12,5 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
-CMD ["python", "app.py"]
-
 CMD ["sh", "-c", "python3 migrate.py && python app.py"]
 
