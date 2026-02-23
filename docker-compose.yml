@@ -18,9 +18,12 @@ services:
     build: .
     ports:
       - "8000:8000"
+    env_file:
+      - .env.local
     volumes:
       - .:/app
     environment:
+      - SECRET_KEY=9f3c8a2b7e4d1c6a9b0e2f5a8c3a7b1e4f6d9c2a1b8e7f5d3c4a2b1e9f6d8c4
       - DB_HOST=db
       - DB_PORT=3306
       - DB_NAME=wombo

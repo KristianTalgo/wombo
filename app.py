@@ -1,8 +1,9 @@
 import os
 import pymysql
-from flask import Flask
+from flask import Flask, request, redirect
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")
 
 
 def get_conn():
@@ -29,7 +30,7 @@ def home():
     try:
         with conn.cursor() as cur:
             # Reneste måte å bruke defaults på i MariaDB/MySQL
-            cur.execute("INSERT INTO visits () VALUES ();")
+            cur.execute("INSERT INTO visits VALUES (NULL, DEFAULT);")
 
             cur.execute("SELECT COUNT(*) FROM visits;")
             row = cur.fetchone()
@@ -39,6 +40,40 @@ def home():
     finally:
         conn.close()
 
+@app.get("/notes")
+def list_notes():
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id, content, created_at FROM notes WHERE user_id=%s ORDER BY id DESC;", (1,))
+            rows = cur.fetchall()
+
+        items = "".join([f"<li>#{r[0]}: {r[1]} <small>({r[2]})</small></li>" for r in rows])
+        return f"""
+        <h1>Notater</h1>
+        <form method="POST" action="/notes">
+          <input name="content" placeholder="Skriv notat..." />
+          <button type="submit">Legg til</button>
+        </form>
+        <ul>{items}</ul>
+        <a href="/">Tilbake</a>
+        """
+    finally:
+        conn.close()
+
+@app.post("/notes")
+def create_note():
+    content = (request.form.get("content") or "").strip()
+    if not content:
+        return redirect("/notes")
+
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO notes (user_id, content) VALUES (%s, %s);", (1, content))
+        return redirect("/notes")
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
