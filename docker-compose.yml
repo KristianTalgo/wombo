@@ -29,6 +29,7 @@ services:
       - DB_NAME=wombo
       - DB_USER=KristianTalgo
       - DB_PASSWORD=159355
+    command: sh -c "python migrate.py && python app.py"
     depends_on:
       db:
         condition: service_healthy

@@ -17,7 +17,7 @@
 - docker compose down
 
 ## kjøre db-migrasjoner
-- docker compose exec web python3 migrate.py
+- kjøres automatisk med docker compose up --build
 
 
 

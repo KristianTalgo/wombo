@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import pymysql
+import time
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -13,6 +14,16 @@ CANDIDATES = [
 ]
 
 MIGRATIONS_DIR = next((p for p in CANDIDATES if p.exists() and p.is_dir()), None)
+
+def wait_for_db(max_tries=30, delay=1):
+    for _ in range(max_tries):
+        try:
+            conn = get_conn()
+            conn.close()
+            return
+        except Exception:
+            time.sleep(delay)
+    raise RuntimeError("DB ble ikke klar i tide")
 
 
 def get_conn():
@@ -57,6 +68,7 @@ def mark_applied(conn, filename: str):
 
 
 def apply_migrations():
+    wait_for_db()
     print("BASE_DIR =", BASE_DIR)
 
     if MIGRATIONS_DIR is None:
