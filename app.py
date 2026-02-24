@@ -27,20 +27,11 @@ def get_conn():
 
 @app.route("/")
 def home():
-    conn = get_conn()
-    try:
-        with conn.cursor() as cur:
-            # Reneste måte å bruke defaults på i MariaDB/MySQL
-            cur.execute("INSERT INTO visits VALUES (NULL, DEFAULT);")
-
-            cur.execute("SELECT COUNT(*) FROM visits;")
-            row = cur.fetchone()
-            count = int(row[0]) if row else 0
-
-        return f"Hei! Flask + MariaDB funker 🚀 Antall besøk: {count}"
-    finally:
-        conn.close()
-
+    if "user_id" not in session:
+        return redirect("/login") 
+    else:
+        return redirect("/notes")
+    
 @app.get("/notes")
 def list_notes():
     if "user_id" not in session:
@@ -61,7 +52,7 @@ def list_notes():
           <button type="submit">Legg til</button>
         </form>
         <ul>{items}</ul>
-        <a href="/">Tilbake</a>
+        <a href="/login">Tilbake</a>
         """
     finally:
         conn.close()
@@ -83,15 +74,44 @@ def create_note():
     finally:
         conn.close()
 
-@app.get("/login")
-def login():
-    session["user_id"] = 1
-    return redirect("/notes")
 
-@app.get("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
+@app.get("/login")
+def login_form():
+    return """
+    <h1>Logg inn</h1>
+    <form method="POST" action="/login">
+      <input name="email" type="email" placeholder="E-post" required />
+      <button type="submit">Logg inn</button>
+    </form>
+    <a href="/">Tilbake</a>
+    """
+
+@app.post("/login")
+def login_submit():
+    email = (request.form.get("email") or "").strip().lower()
+    if not email:
+        return redirect("/login")
+
+    conn = get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM users WHERE email=%s LIMIT 1;", (email,))
+            row = cur.fetchone()
+
+        if not row:
+            # Ikke funnet i DB -> ikke logg inn
+            return f"""
+            <h1>Ingen tilgang</h1>
+            <p>E-posten <b>{escape(email)}</b> finnes ikke i systemet.</p>
+            <a href="/login">Prøv igjen</a>
+            """
+
+        user_id = int(row[0])
+        session["user_id"] = user_id
+        return redirect("/notes")
+    finally:
+        conn.close()
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
