@@ -2,11 +2,6 @@ import os
 import pymysql
 from flask import Flask, request, redirect, session
 from markupsafe import escape
-from authlib.integrations.flask_client import OAuth
-
-oauth = OAuth()
-
-
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")

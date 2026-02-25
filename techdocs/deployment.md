@@ -2,9 +2,9 @@
 
 Prosjektet deployes på en virtuell maskin (VM) som fungerer som en lokal server.
 
-VM-en opprettes i Proxmox, som kjører på skolens serverinfrastruktur.
-Proxmox brukes kun til virtualisering, mens VM-en er miljøet hvor
-applikasjonen installeres og kjøres.
+VM-en opprettes i Oracle VirtualBox og kjører lokalt på en Windows-PC.
+Virtualisering brukes for å simulere et separat servermiljø (Ubuntu Server)
+uavhengig av vertsoperativsystemet.
 
 ---
 
@@ -25,7 +25,7 @@ Containerne kommuniserer via Docker network.
 
 ## Virtuell maskin
 
-VM opprettes i Proxmox med følgende spesifikasjoner:
+Anbefalte VM-spesifikasjoner:
 
 | Ressurs | Verdi |
 |---|---|
@@ -33,14 +33,13 @@ VM opprettes i Proxmox med følgende spesifikasjoner:
 | CPU | 2 cores |
 | RAM | 2 GB |
 | Disk | 20 GB |
-| Nettverk | vmbr0 (bridged) |
+| Nettverk | Bridged Adapter |
 
-VM-en bruker maskinressurser fra skolens server, men fungerer som
-prosjektets lokale server.
+Bridged nettverk gir VM-en egen IP-adresse på lokalnettet.
 
 ---
 
-## Klargjøring av server
+## Klargjøring av server (Ubuntu VM)
 
 Oppdater systemet:
 

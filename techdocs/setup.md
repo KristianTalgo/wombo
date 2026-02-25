@@ -1,3 +1,7 @@
+# Setup (lokal utvikling)
+-Denne guiden beskriver hvordan prosjektet kjøres lokalt på utviklingsmaskin (macOS, Windows eller Linux). Deployment til server er beskrevet i deployment.md.
+
+
 ## Krav
 - Docker Desktop
 - Git
@@ -12,6 +16,9 @@
 
 ## åpne app
 - http://localhost:8000
+
+## ved deployment på VM:
+- http://<VM-IP>:8000
 
 ## stoppe siden
 - docker compose down
