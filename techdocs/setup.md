@@ -19,5 +19,8 @@
 ## kjøre db-migrasjoner
 - kjøres automatisk med docker compose up --build
 
+## forced instalasjon av requirements-pakker
+- docker compose build --no-cache
+
 
 
